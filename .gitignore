@@ -1,0 +1,9 @@
+# Base project ignores
+.DS_Store
+Thumbs.db
+*.log
+*.env
+*.local
+*.swp
+.idea/
+.vscode/
