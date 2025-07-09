@@ -1,6 +1,6 @@
-import React from 'react'
+import React from 'react';
 
-const PatientQueue = () => {
+const PatientQueue = ({ patients }) => {
     return (
         <>
             <h2 className="text-3xl font-bold mb-4 mt-8">Patient Queue</h2>
@@ -15,20 +15,18 @@ const PatientQueue = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td className="px-4 py-4 border-t border-slate-200">12345</td>
-                        <td className="px-4 py-2 border-t border-slate-200 ">Sophia Clark</td>
-                        <td className="px-4 py-2 border-t border-slate-200 ">Cardiology</td>
-                        <td className="px-4 py-2 border-t border-slate-200  cursor-pointer">Remove</td>
-                    </tr>
+                    {patients.map((patient) => (
+                        <tr key={patient.patientId}>
+                            <td className="px-4 py-4 border-t border-slate-200">{patient.patientId}</td>
+                            <td className="px-4 py-2 border-t border-slate-200">{patient.name}</td>
+                            <td className="px-4 py-2 border-t border-slate-200">{patient.nic}</td>
+                            <td className="px-4 py-2 border-t border-slate-200 cursor-pointer">Remove</td>
+                        </tr>
+                    ))}
                 </tbody>
-                
             </table>
-
-
-
         </>
-    )
-}
+    );
+};
 
-export default PatientQueue
+export default PatientQueue;

@@ -1,12 +1,13 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import { io } from 'socket.io-client';
 
 const socket = io(import.meta.env.VITE_SOCKET_URL);
 
+socket.emit('register_role', 'doctor');
+
 const AddPatient = () => {
   const [name, setName] = useState('');
   const [nic, setNic] = useState('');
-  const [opd, setOpd] = useState(1); // Default to OPD 1
 
   const handleSubmit = () => {
     if (!name || !nic) {
@@ -14,16 +15,11 @@ const AddPatient = () => {
       return;
     }
 
-    socket.emit('add_patient', {
-      name,
-      nic,
-      opd: parseInt(opd)
-    });
+    socket.emit('add_patient', { name, nic });
 
-    alert(`Patient "${name}" added to OPD ${opd}`);
+    alert(`Patient "${name}" added successfully`);
     setName('');
     setNic('');
-    setOpd(1);
   };
 
   return (
@@ -50,19 +46,6 @@ const AddPatient = () => {
           onChange={(e) => setNic(e.target.value)}
           className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-      </div>
-
-      <div className="mt-4">
-        <label className="block text-sm font-medium mb-1">Select OPD</label>
-        <select
-          value={opd}
-          onChange={(e) => setOpd(e.target.value)}
-          className="w-full border border-gray-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {[...Array(10)].map((_, i) => (
-            <option key={i} value={i + 1}>OPD {i + 1}</option>
-          ))}
-        </select>
       </div>
 
       <button

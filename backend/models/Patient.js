@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const patientSchema = new mongoose.Schema({
+  patientId: String,
   name: String,
   nic: String,
   number: Number,
@@ -8,5 +9,6 @@ const patientSchema = new mongoose.Schema({
   status: { type: String, enum: ['waiting', 'called', 'done'], default: 'waiting' },
   createdAt: { type: Date, default: Date.now }
 });
+
 
 module.exports = mongoose.model('Patient', patientSchema);

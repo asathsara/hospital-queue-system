@@ -1,5 +1,7 @@
 const socket = io(SOCKET_SERVER);
 
+socket.emit('register_role', 'display');
+
 socket.on('queue_update', () => {
     fetch(`${SOCKET_SERVER}/api/display`)
         .then(res => res.json())
