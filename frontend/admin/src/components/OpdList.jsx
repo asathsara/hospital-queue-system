@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import io from 'socket.io-client';
-
-// Connect once (outside component scope or in App-level)
-const socket = io(import.meta.env.VITE_SOCKET_URL);
+import { useSocket } from '../contexts/socket';
 
 const OpdList = () => {
+    const socket = useSocket();
     const [opds, setOpds] = useState([]);
 
     useEffect(() => {
@@ -12,15 +10,15 @@ const OpdList = () => {
         socket.emit('get_opds');
 
         // Receive OPDs
-        socket.on('opds_list', (data) => {
-            setOpds(data);
-        });
+        socket.on('opds_list', setOpds);
+        socket.on('opd_list_updated', () => socket.emit('get_opds'));
 
         // Optional: Clean up listener
         return () => {
-            socket.off('opds_list');
+            socket.off('opds_list', setOpds);
+            socket.off('opd_list_updated');
         };
-    }, []);
+    }, [socket]);
 
     return (
         <>

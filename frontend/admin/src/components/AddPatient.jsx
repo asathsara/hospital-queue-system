@@ -1,13 +1,12 @@
-import  { useState } from 'react';
-import { io } from 'socket.io-client';
-
-const socket = io(import.meta.env.VITE_SOCKET_URL);
-
-socket.emit('register_role', 'doctor');
+import { useState } from 'react';
+import { useSocket } from '../contexts/socket';
 
 const AddPatient = () => {
+  const socket = useSocket();
   const [name, setName] = useState('');
   const [nic, setNic] = useState('');
+
+  socket.emit('register_role', 'doctor');
 
   const handleSubmit = () => {
     if (!name || !nic) {
