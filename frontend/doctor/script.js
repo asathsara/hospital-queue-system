@@ -27,3 +27,21 @@ socket.on('patient_called', (patient) => {
     }
 });
 
+// Get available OPDs
+socket.emit('get_available_opds');
+
+socket.on('available_opds', (opds) => {
+  console.log('Available OPDs:', opds);
+  // Show a dropdown to select one and emit 'select_opd' with selected opdNumber
+});
+
+function selectOpd(opdNumber) {
+  socket.emit('select_opd', opdNumber);
+}
+
+socket.on('opd_assigned', (opdNumber) => {
+  console.log('OPD assigned:', opdNumber);
+  // Proceed to your doctor UI with this opdNumber
+});
+
+

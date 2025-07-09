@@ -1,24 +1,24 @@
-
-import AddPatient from './components/AddPatient'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar'
-import PatientQueue from './components/PatientQueue'
+import PatientPage from './pages/Patient';
+import OpdPage from './pages/Opd';
 function App() {
 
   return (
-    <div className='font-lexend'>
-      <Navbar />
-      
-      <div className="container mx-auto p-4 flex">
+    <Router>
+      <div className='font-lexend'>
+        <Navbar />
 
-        <div className='w-2/5 pr-6'>
-          <AddPatient />
-        </div>
+        <div className="container mx-auto p-4 flex">
+          <Routes>
 
-        <div className='w-3/5'>
-          <PatientQueue />
+            <Route path="/" element={<PatientPage />} />
+            <Route path="/add-opd" element={<OpdPage />} />
+
+          </Routes>
         </div>
       </div>
-    </div>
+    </Router>
   )
 }
 
