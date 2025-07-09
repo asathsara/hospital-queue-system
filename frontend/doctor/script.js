@@ -52,25 +52,29 @@ socket.on('opd_error', (msg) => {
     fetchAvailableOpds();
 });
 
-// Handle "Next Patient" button
-document.getElementById('next-patient-btn').onclick = () => {
-    if (!selectedOpd) return;
-    socket.emit('next_patient', selectedOpd);
-};
+// Update current patient information
+function updateCurrentPatient() {
+    if (selectedOpd) {
+        socket.emit('get_current_patient', selectedOpd);
+    }
+}
 
-// Show called patient number
-socket.on('patient_called', (patient) => {
+socket.on('current_patient', (patient) => {
     document.getElementById('current-patient').textContent = patient ? patient.number : '-';
     document.getElementById('current-patient-name').textContent = patient ? patient.name : '-';
     document.getElementById('current-patient-nic').textContent = patient ? patient.nic : '-';
 });
 
-// Update patient queue
-socket.on('queue_update', () => {
+// Handle "Next Patient" button
+document.getElementById('next-patient-btn').onclick = () => {
     if (selectedOpd) {
         socket.emit('next_patient', selectedOpd);
+        // Wait for queue_update to refresh UI
     }
-});
+};
+
+// Update patient queue
+socket.on('queue_update', updateCurrentPatient);
 
 window.addEventListener('beforeunload', function () {
     if (selectedOpd) {

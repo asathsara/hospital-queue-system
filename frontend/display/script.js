@@ -20,6 +20,10 @@ socket.on('display_data', (data) => {
 });
 
 socket.on('opd_list_updated', () => {
+    socket.emit('get_display_data'); // client to server
+});
+
+socket.on('queue_update', () => {
     socket.emit('get_display_data');
 });
 

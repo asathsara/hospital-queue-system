@@ -20,14 +20,16 @@ module.exports = (io, socket) => {
     try {
       const opds = await Opd.find({});
       const data = await Promise.all(opds.map(async (opd) => {
-        const patient = await Patient.findOne({
-          opd: opd.opdNumber,
-          status: { $in: ['called', 'waiting'] }
-        }).sort({ number: 1 });
-
+        let patient = null;
+        if (opd.currentNumber) {
+          patient = await Patient.findOne({
+            opd: opd.opdNumber,
+            number: opd.currentNumber
+          });
+        }
         return {
           opdNumber: opd.opdNumber,
-          currentPatient: patient ? patient.patientId : '-'
+          currentPatient: patient ? `${patient.patientId}` : '-'
         };
       }));
 

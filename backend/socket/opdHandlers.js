@@ -130,4 +130,15 @@ module.exports = (io, socket, activeOPDs) => {
       console.log(`Doctor disconnected, OPD ${opdNumber} freed`);
     }
   });
+
+  // Get current patient
+  socket.on('get_current_patient', async (opdNumber) => {
+    const opd = await Opd.findOne({ opdNumber });
+    if (!opd || !opd.currentNumber) {
+      socket.emit('current_patient', null);
+      return;
+    }
+    const patient = await Patient.findOne({ opd: opdNumber, number: opd.currentNumber });
+    socket.emit('current_patient', patient);
+  });
 };
