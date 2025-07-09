@@ -8,8 +8,8 @@ export default function Navbar() {
         <h1 className="text-xl font-bold text-gray-800">Clinic Queue</h1>
         <nav>
           <ul className="flex space-x-4">
-            <li><Link to="/" className="text-gray-600 hover:text-blue-500">Add Patient</Link></li>
-            <li><Link to="/add-opd" className="text-gray-600 hover:text-blue-500">Add OPD</Link></li>
+            <li><Link to="/" className="text-lg font-bold text-gray-600">Add Patient</Link></li>
+            <li><Link to="/add-opd" className="text-lg font-bold text-gray-600">Add OPD</Link></li>
           </ul>
         </nav>
       </div>

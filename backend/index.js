@@ -20,9 +20,16 @@ mongoose.connect('mongodb://localhost:27017/hospital-queue', {
     useUnifiedTopology: true,
 });
 
+mongoose.connection.on('error', err => {
+    console.error('❌ MongoDB connection error:', err);
+});
+mongoose.connection.once('open', () => {
+    console.log('✅ MongoDB connected successfully');
+});
+
 // Mongoose models
 const Patient = require('./models/Patient');
-const Opd = require('./models/Opd'); // If you want to keep track of OPD states
+const Opd = require('./models/Opd');
 
 // Serve static files
 app.use('/static', express.static(path.join(__dirname, '../frontend/shared')));
@@ -165,6 +172,34 @@ io.on('connection', (socket) => {
             socket.emit('error', 'Failed to call next patient');
         }
     });
+
+    socket.on('add_opd', async ({ opdNumber, doctorName }) => {
+
+        try {
+            const opd = await Opd.create({ opdNumber, doctorName, isAssigned: false });
+            socket.emit('opd_added', opd); // Acknowledge to sender
+            io.emit('opd_list_updated');   // Notify everyone (e.g., displays)
+
+        } catch (error) {
+            console.error('Failed to add OPD:', err);
+            socket.emit('opd_error', 'Failed to add OPD');
+        }
+    });
+
+    socket.on('get_opds', async () => {
+        try {
+            const opds = await Opd.find({});
+            socket.emit('opds_list', opds);
+        } catch (err) {
+            console.error('Error fetching OPDs:', err);
+            socket.emit('opd_error', 'Failed to fetch OPDs');
+        }
+    });
 });
+
+
+
+
+
 
 server.listen(3000, () => console.log('Server running on port 3000'));

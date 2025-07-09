@@ -1,47 +1,30 @@
 const socket = io(SOCKET_SERVER);
 
-console.log("Registering doctor...");
-socket.emit('register_doctor');
-
-console.log("Registering role...");
 socket.emit('register_role', 'doctor');
 
-console.log("Requesting next patient...");
-socket.emit('next_patient', 1);
-
-
-
-socket.on('opd_assigned', (opd) => {
-    console.log("This doctor is OPD:", opd);
-    // Save this if needed in a global variable
-});
-
-socket.emit('next_patient', 1); // OPD 1
-
-socket.on('patient_called', (patient) => {
-    if (patient) {
-        // Show patient info
-        console.log('Next patient:', patient);
-    } else {
-        console.log('No waiting patient');
-    }
-});
-
-// Get available OPDs
+// Fetch available OPDs
 socket.emit('get_available_opds');
 
 socket.on('available_opds', (opds) => {
-  console.log('Available OPDs:', opds);
-  // Show a dropdown to select one and emit 'select_opd' with selected opdNumber
+  const select = document.getElementById('opd-select');
+  select.innerHTML = '';
+  opds.forEach(opd => {
+    const option = document.createElement('option');
+    option.value = opd.opdNumber;
+    option.text = `OPD ${opd.opdNumber} - Dr. ${opd.doctorName}`;
+    select.appendChild(option);
+  });
 });
 
-function selectOpd(opdNumber) {
-  socket.emit('select_opd', opdNumber);
-}
+document.getElementById('select-opd-btn').onclick = () => {
+  const opdNumber = document.getElementById('opd-select').value;
+  socket.emit('select_opd', Number(opdNumber));
+};
 
 socket.on('opd_assigned', (opdNumber) => {
-  console.log('OPD assigned:', opdNumber);
-  // Proceed to your doctor UI with this opdNumber
+  document.getElementById('opd-select-section').style.display = 'none';
+  document.getElementById('doctor-ui').style.display = 'block';
+  // Now show the doctor UI for this OPD
 });
 
 

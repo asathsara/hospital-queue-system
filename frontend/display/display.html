@@ -42,6 +42,18 @@
             </tbody>
 
         </table>
+
+        <!-- Add this inside <main> before the doctor UI -->
+        <div id="opd-select-section"
+            class="w-full max-w-md bg-white rounded-xl p-8 flex flex-col items-center gap-6">
+            <h2 class="text-2xl font-bold mb-2">Select Your OPD</h2>
+            <select id="opd-select" class="w-full border border-gray-300 p-2 rounded-md"></select>
+            <button id="select-opd-btn"
+                class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 mt-4">Select OPD</button>
+        </div>
+        <div id="doctor-ui" style="display:none;">
+            <!-- Your existing doctor UI here -->
+        </div>
     </main>
 
 
