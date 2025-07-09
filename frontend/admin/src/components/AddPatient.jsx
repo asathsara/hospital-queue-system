@@ -1,7 +1,7 @@
 import React, { useState} from 'react';
 import { io } from 'socket.io-client';
 
-const socket = io('http://192.168.1.5:3000'); // replace with your LAN IP
+const socket = io(import.meta.env.VITE_SOCKET_URL);
 
 const AddPatient = () => {
   const [name, setName] = useState('');

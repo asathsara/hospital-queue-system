@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path')
 
 const app = express();
 const server = http.createServer(app);
@@ -19,6 +20,10 @@ mongoose.connect('mongodb://localhost:27017/hospital-queue');
 // Your Mongoose models go here
 const Patient = require('./models/Patient');
 const Opd = require('./models/Opd');
+
+app.use('/doctor', express.static(path.join(__dirname, '../frontend/doctor')));
+app.use('/display', express.static(path.join(__dirname, '../frontend/display')));
+
 
 // Socket.io logic
 io.on('connection', (socket) => {
