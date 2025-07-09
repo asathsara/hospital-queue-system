@@ -109,35 +109,16 @@ io.on('connection', (socket) => {
             const lastPatient = await Patient.findOne().sort({ createdAt: -1 });
             const newId = generatePatientId(lastPatient?.patientId);
 
-            // Get all currently assigned OPDs
-            const assignedOpds = [...activeOPDs.values()];
-            if (assignedOpds.length === 0) {
-                socket.emit('error', 'No active OPDs');
-                return;
-            }
-
-            const opdLoads = await Promise.all(
-                assignedOpds.map(async (opd) => {
-                    const count = await Patient.countDocuments({ opd, status: 'waiting' });
-                    return { opd, count };
-                })
-            );
-
-            const minOpd = opdLoads.reduce((min, curr) => (curr.count < min.count ? curr : min), opdLoads[0]);
-
-            const latest = await Patient.find({ opd: minOpd.opd }).sort({ number: -1 }).limit(1);
-            const number = latest.length ? latest[0].number + 1 : 1;
-
             const patient = await Patient.create({
                 patientId: newId,
                 name,
                 nic,
-                opd: minOpd.opd,
-                number,
+                opd: null, // Not assigned yet
+                number: null, // Not assigned yet
                 status: 'waiting',
             });
 
-            io.emit('queue_update');
+            io.emit('patient_list_updated'); // Notify all displays
             socket.emit('patient_added', patient);
         } catch (error) {
             console.error(error);
@@ -173,6 +154,26 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('get_patients', async () => {
+         try {
+            const patients = await Patient.find({});
+            socket.emit('patients_list', patients);
+        } catch (err) {
+            console.error('Error fetching Patients:', err);
+            socket.emit('patient_error', 'Failed to fetch Patients');
+        }
+    })
+
+    socket.on('delete_patient', async (patientId) => {
+        try {
+            await Patient.deleteOne({ patientId });
+            io.emit('patient_list_updated'); // Notify all clients to refresh
+        } catch (error) {
+            console.error('Error deleting patient:', error);
+            socket.emit('patient_error', 'Failed to delete patient');
+        }
+    })
+
     socket.on('add_opd', async ({ opdNumber, doctorName }) => {
 
         try {
@@ -195,8 +196,53 @@ io.on('connection', (socket) => {
             socket.emit('opd_error', 'Failed to fetch OPDs');
         }
     });
+
+    // When display requests the current queue
+    socket.on('get_display_data', async () => {
+        const opds = await Opd.find({});
+        const data = await Promise.all(opds.map(async (opd) => {
+            // Find the latest called or waiting patient for this OPD
+            const patient = await Patient.findOne({
+                opd: opd.opdNumber,
+                status: { $in: ['called', 'waiting'] }
+            }).sort({ number: 1 });
+            return {
+                opdNumber: opd.opdNumber,
+                currentPatient: patient ? patient.patientId : '-'
+            };
+        }));
+        socket.emit('display_data', data);
+    });
+
+    
 });
 
+// Also, whenever queue_update happens, emit to all displays
+function emitDisplayData() {
+    io.emit('get_display_data');
+}
+
+io.on('connection', (socket) => {
+    // ...existing code...
+
+    // When a display connects, send initial data
+    socket.on('register_role', (role) => {
+        if (role === 'display') {
+            socket.emit('get_display_data');
+        }
+    });
+
+    // After patient added or next patient called, update displays
+    // Replace io.emit('queue_update'); with:
+    // emitDisplayData();
+
+    // Example:
+    // After adding patient:
+    // emitDisplayData();
+
+    // After calling next patient:
+    // emitDisplayData();
+});
 
 
 
