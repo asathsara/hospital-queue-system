@@ -1,9 +1,9 @@
 {
   "name": "hospital-queue-system",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "dev": "node --watch index"
+    "dev": "node --watch server"
   },
   "keywords": [],
   "author": "",
