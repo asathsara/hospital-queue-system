@@ -1,30 +1,66 @@
 const socket = io(SOCKET_SERVER);
 
+let selectedOpd = null;
+let selectedDoctor = null;
+
+// Register as doctor
 socket.emit('register_role', 'doctor');
 
-// Fetch available OPDs
-socket.emit('get_available_opds');
+// Fetch available OPDs on load and when list updates
+function fetchAvailableOpds() {
+    socket.emit('get_available_opds');
+}
+fetchAvailableOpds();
 
 socket.on('available_opds', (opds) => {
-  const select = document.getElementById('opd-select');
-  select.innerHTML = '';
-  opds.forEach(opd => {
-    const option = document.createElement('option');
-    option.value = opd.opdNumber;
-    option.text = `OPD ${opd.opdNumber} - Dr. ${opd.doctorName}`;
-    select.appendChild(option);
-  });
+    const select = document.getElementById('opd-select');
+    select.innerHTML = '';
+    opds.forEach(opd => {
+        const option = document.createElement('option');
+        option.value = opd.opdNumber;
+        option.text = `OPD ${opd.opdNumber} - Dr. ${opd.doctorName}`;
+        select.appendChild(option);
+    });
 });
 
+// Listen for OPD list updates (e.g., when another doctor claims or releases an OPD)
+socket.on('opd_list_updated', fetchAvailableOpds);
+
+// Handle OPD selection
 document.getElementById('select-opd-btn').onclick = () => {
-  const opdNumber = document.getElementById('opd-select').value;
-  socket.emit('select_opd', Number(opdNumber));
+    const select = document.getElementById('opd-select');
+    const opdNumber = select.value;
+    if (!opdNumber) return alert('Please select an OPD');
+    // Find doctor name for display
+    const selectedOption = select.options[select.selectedIndex].text;
+    selectedDoctor = selectedOption.split(' - Dr. ')[1];
+    socket.emit('select_opd', Number(opdNumber));
 };
 
+// When OPD is assigned to this doctor
 socket.on('opd_assigned', (opdNumber) => {
-  document.getElementById('opd-select-section').style.display = 'none';
-  document.getElementById('doctor-ui').style.display = 'block';
-  // Now show the doctor UI for this OPD
+    selectedOpd = opdNumber;
+    document.getElementById('opd-select-section').style.display = 'none';
+    document.getElementById('doctor-ui').style.display = 'flex';
+    document.getElementById('doctor-title').textContent = `Dr. ${selectedDoctor} - OPD ${opdNumber}`;
+    document.getElementById('current-patient').textContent = '-';
+});
+
+// Handle error if OPD is not available
+socket.on('opd_error', (msg) => {
+    alert(msg);
+    fetchAvailableOpds();
+});
+
+// Handle "Next Patient" button
+document.getElementById('next-patient-btn').onclick = () => {
+    if (!selectedOpd) return;
+    socket.emit('next_patient', selectedOpd);
+};
+
+// Show called patient number
+socket.on('patient_called', (patient) => {
+    document.getElementById('current-patient').textContent = patient ? patient.number : '-';
 });
 
 
