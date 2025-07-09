@@ -73,11 +73,16 @@ module.exports = (io, socket, activeOPDs) => {
           { currentNumber: patient.number },
           { upsert: true }
         );
-
         socket.emit('patient_called', patient);
         io.emit('queue_update');
       } else {
+        // No more patients, clear currentNumber
+        await Opd.findOneAndUpdate(
+          { opdNumber },
+          { currentNumber: null }
+        );
         socket.emit('patient_called', null);
+        io.emit('queue_update');
       }
     } catch (err) {
       console.error('Error calling next patient:', err);
@@ -85,13 +90,43 @@ module.exports = (io, socket, activeOPDs) => {
     }
   });
 
+  // Manual OPD release (on browser close/reload)
+  socket.on('opd_release', async (opdNumber) => {
+    // Mark current patient as done if exists
+    const opd = await Opd.findOne({ opdNumber });
+    if (opd && opd.currentNumber) {
+      await Patient.findOneAndUpdate(
+        { opd: opdNumber, number: opd.currentNumber, status: 'called' },
+        { status: 'done' }
+      );
+      opd.currentNumber = null;
+      await opd.save();
+    }
+    await Opd.findOneAndUpdate({ opdNumber }, { isAssigned: false });
+    activeOPDs.delete(socket.id);
+    io.emit('opd_list_updated');
+    io.emit('queue_update');
+    console.log(`OPD ${opdNumber} released by manual event`);
+  });
+
   // Handle disconnect for doctors
   socket.on('disconnect', async () => {
     if (activeOPDs.has(socket.id)) {
       const opdNumber = activeOPDs.get(socket.id);
+      // Mark current patient as done if exists
+      const opd = await Opd.findOne({ opdNumber });
+      if (opd && opd.currentNumber) {
+        await Patient.findOneAndUpdate(
+          { opd: opdNumber, number: opd.currentNumber, status: 'called' },
+          { status: 'done' }
+        );
+        opd.currentNumber = null;
+        await opd.save();
+      }
       await Opd.findOneAndUpdate({ opdNumber }, { isAssigned: false });
       activeOPDs.delete(socket.id);
       io.emit('opd_list_updated');
+      io.emit('queue_update');
       console.log(`Doctor disconnected, OPD ${opdNumber} freed`);
     }
   });

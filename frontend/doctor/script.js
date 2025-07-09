@@ -61,6 +61,21 @@ document.getElementById('next-patient-btn').onclick = () => {
 // Show called patient number
 socket.on('patient_called', (patient) => {
     document.getElementById('current-patient').textContent = patient ? patient.number : '-';
+    document.getElementById('current-patient-name').textContent = patient ? patient.name : '-';
+    document.getElementById('current-patient-nic').textContent = patient ? patient.nic : '-';
+});
+
+// Update patient queue
+socket.on('queue_update', () => {
+    if (selectedOpd) {
+        socket.emit('next_patient', selectedOpd);
+    }
+});
+
+window.addEventListener('beforeunload', function () {
+    if (selectedOpd) {
+        socket.emit('opd_release', selectedOpd);
+    }
 });
 
 

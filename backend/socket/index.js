@@ -2,6 +2,7 @@ const { Server } = require('socket.io');
 const registerPatientHandlers = require('./patientHandlers');
 const registerOpdHandlers = require('./opdHandlers');
 const registerDisplayHandlers = require('./displayHandlers');
+const autoAssigner = require('./autoAssigner');
 
 const activeOPDs = new Map(); // Shared across handlers
 
@@ -30,6 +31,8 @@ function setupSocket(server) {
     registerOpdHandlers(io, socket, activeOPDs);
     registerDisplayHandlers(io, socket);
   });
+
+  autoAssigner(io);
 
   return io;
 }
