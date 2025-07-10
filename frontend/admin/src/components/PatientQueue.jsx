@@ -25,6 +25,20 @@ const PatientQueue = () => {
         }
     };
 
+    // Helper function
+    function getStatusColor(status) {
+        switch (status) {
+            case 'waiting':
+                return 'text-yellow-600';
+            case 'called':
+                return 'text-blue-600';
+            case 'done':
+                return 'text-green-600';
+            default:
+                return 'text-gray-600';
+        }
+    }
+
     return (
         <>
             <h2 className="text-3xl font-bold mb-4 mt-8">Patient Queue</h2>
@@ -35,6 +49,7 @@ const PatientQueue = () => {
                         <th className="px-4 py-2 border-t-0">ID</th>
                         <th className="px-4 py-2 border-t-0">Name</th>
                         <th className="px-4 py-2 border-t-0">NIC</th>
+                        <th className="px-4 py-2 border-t-0">Status</th>
                         <th className="px-4 py-2 border-t-0">Action</th>
                     </tr>
                 </thead>
@@ -44,6 +59,9 @@ const PatientQueue = () => {
                             <td className="px-4 py-4 border-t border-slate-200">{patient.patientId}</td>
                             <td className="px-4 py-2 border-t border-slate-200">{patient.name}</td>
                             <td className="px-4 py-2 border-t border-slate-200">{patient.nic}</td>
+                            <td className={`px-4 py-2 border-t border-slate-200 ${getStatusColor(patient.status)}`}>
+                                {patient.status}
+                            </td>
                             <td className="px-4 py-2 border-t border-slate-200 cursor-pointer" onClick={() => handleDelete(patient.patientId)}>Remove</td>
                         </tr>
                     ))}

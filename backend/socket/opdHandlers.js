@@ -1,35 +1,58 @@
 const Opd = require('../models/Opd');
 const Patient = require('../models/Patient');
+const { assignNextPatientToOpd } = require('./autoAssigner');
 
 module.exports = (io, socket, activeOPDs) => {
 
   // Doctor gets available OPDs
   socket.on('get_available_opds', async () => {
+
     const available = await Opd.find({ isAssigned: false });
     socket.emit('available_opds', available);
   });
 
   // Doctor selects an OPD
   socket.on('select_opd', async (opdNumber) => {
+
     const opd = await Opd.findOne({ opdNumber, isAssigned: false });
+
+    // If OPD is not available, notify doctor
     if (!opd) {
       socket.emit('opd_error', 'OPD not available');
       return;
     }
+
     opd.isAssigned = true;
+
+    // update current patient
     await opd.save();
 
     activeOPDs.set(socket.id, opdNumber);
+
+    // Assign next patient using the shared function
+    const patient = await assignNextPatientToOpd(opdNumber, io);
+    socket.emit('patient_called', patient);
+    console.log(patient);
+
     socket.emit('opd_assigned', opdNumber);
     io.emit('opd_list_updated');
+
   });
 
   // Add OPD (from Admin)
   socket.on('add_opd', async ({ opdNumber, doctorName }) => {
+
     try {
-      const opd = await Opd.create({ opdNumber, doctorName, isAssigned: false });
+      const opd = await Opd.create({
+        opdNumber,
+        doctorName,
+        isAssigned: false,
+        currentPatientId: null
+      });
+
       socket.emit('opd_added', opd);
       io.emit('opd_list_updated');
+
     } catch (err) {
       console.error('Failed to add OPD:', err);
       socket.emit('opd_error', 'Failed to add OPD');
@@ -38,9 +61,11 @@ module.exports = (io, socket, activeOPDs) => {
 
   // Get all OPDs
   socket.on('get_opds', async () => {
+
     try {
       const opds = await Opd.find({});
       socket.emit('opds_list', opds);
+
     } catch (err) {
       console.error('Error fetching OPDs:', err);
       socket.emit('opd_error', 'Failed to fetch OPDs');
@@ -49,9 +74,11 @@ module.exports = (io, socket, activeOPDs) => {
 
   // Delete OPD
   socket.on('delete_opd', async (opdId) => {
+
     try {
       await Opd.deleteOne({ _id: opdId });
       io.emit('opd_list_updated');
+
     } catch (err) {
       console.error('Error deleting OPD:', err);
       socket.emit('opd_error', 'Failed to delete OPD');
@@ -61,29 +88,22 @@ module.exports = (io, socket, activeOPDs) => {
   // Doctor calls next patient
   socket.on('next_patient', async (opdNumber) => {
     try {
-      const patient = await Patient.findOneAndUpdate(
-        { opd: opdNumber, status: 'waiting' },
-        { status: 'called' },
-        { sort: { number: 1 }, new: true }
-      );
-
-      if (patient) {
-        await Opd.findOneAndUpdate(
-          { opdNumber },
-          { currentNumber: patient.number },
-          { upsert: true }
+      // Mark current patient as done
+      const opd = await Opd.findOne({ opdNumber });
+      if (opd && opd.currentPatientId) {
+        await Patient.findOneAndUpdate(
+          { opd: opdNumber, number: opd.currentPatientId, status: 'called' },
+          { status: 'done' }
         );
-        socket.emit('patient_called', patient);
-        io.emit('queue_update');
-      } else {
-        // No more patients, clear currentNumber
-        await Opd.findOneAndUpdate(
-          { opdNumber },
-          { currentNumber: null }
-        );
-        socket.emit('patient_called', null);
-        io.emit('queue_update');
+        opd.currentPatientId = null;
+        await opd.save();
       }
+
+      // Assign next patient using the shared function
+      const patient = await assignNextPatientToOpd(opdNumber, io);
+
+      socket.emit('patient_called', patient);
+      io.emit('queue_update');
     } catch (err) {
       console.error('Error calling next patient:', err);
       socket.emit('error', 'Failed to call next patient');
@@ -134,11 +154,11 @@ module.exports = (io, socket, activeOPDs) => {
   // Get current patient
   socket.on('get_current_patient', async (opdNumber) => {
     const opd = await Opd.findOne({ opdNumber });
-    if (!opd || !opd.currentNumber) {
+    if (!opd || !opd.currentPatientId) {
       socket.emit('current_patient', null);
       return;
     }
-    const patient = await Patient.findOne({ opd: opdNumber, number: opd.currentNumber });
+    const patient = await Patient.findOne({ patientId: opd.currentPatientId });
     socket.emit('current_patient', patient);
   });
 };

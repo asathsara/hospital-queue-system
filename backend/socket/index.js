@@ -32,7 +32,7 @@ function setupSocket(server) {
     registerDisplayHandlers(io, socket);
   });
 
-  autoAssigner(io);
+  //autoAssigner(io);
 
   return io;
 }

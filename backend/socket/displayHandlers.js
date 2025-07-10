@@ -21,10 +21,9 @@ module.exports = (io, socket) => {
       const opds = await Opd.find({});
       const data = await Promise.all(opds.map(async (opd) => {
         let patient = null;
-        if (opd.currentNumber) {
+        if (opd.currentPatientId) {
           patient = await Patient.findOne({
-            opd: opd.opdNumber,
-            number: opd.currentNumber
+            patientId: opd.currentPatientId
           });
         }
         return {
