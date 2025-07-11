@@ -1,4 +1,6 @@
 const Patient = require('../models/Patient');
+const Opd = require('../models/Opd');
+const { assignNextPatientToOpd } = require('./autoAssigner');
 
 function generatePatientId(lastId) {
   if (!lastId) return 'P01';
@@ -23,8 +25,23 @@ module.exports = (io, socket) => {
         status: 'waiting',
       });
 
+
+
+      // --- Auto assign to free OPD if available ---
+      const activeOpds = await Opd.find({ isAssigned: true });
+      const freeOpds = activeOpds.filter(opd => !opd.currentPatientId);
+
+      if (freeOpds.length > 0) {
+        const targetOpd = freeOpds.sort((a, b) => a.opdNumber - b.opdNumber)[0];
+
+        // Assign next patient and notify the doctor
+        const assignedPatient = await assignNextPatientToOpd(targetOpd.opdNumber, io);
+        socket.emit('patient_called',assignedPatient);
+      }
+
       io.emit('patient_list_updated');
       socket.emit('patient_added', patient);
+
 
     } catch (err) {
 

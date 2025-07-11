@@ -32,7 +32,6 @@ module.exports = (io, socket, activeOPDs) => {
     // Assign next patient using the shared function
     const patient = await assignNextPatientToOpd(opdNumber, io);
     socket.emit('patient_called', patient);
-    console.log(patient);
 
     socket.emit('opd_assigned', opdNumber);
     io.emit('opd_list_updated');
@@ -91,19 +90,24 @@ module.exports = (io, socket, activeOPDs) => {
       // Mark current patient as done
       const opd = await Opd.findOne({ opdNumber });
       if (opd && opd.currentPatientId) {
+
+        // Update the current patient status to 'done'
         await Patient.findOneAndUpdate(
-          { opd: opdNumber, number: opd.currentPatientId, status: 'called' },
+          { patientId: opd.currentPatientId, status: 'called' },
           { status: 'done' }
         );
+
+        // Clear current patient in OPD
         opd.currentPatientId = null;
         await opd.save();
       }
 
       // Assign next patient using the shared function
       const patient = await assignNextPatientToOpd(opdNumber, io);
-
       socket.emit('patient_called', patient);
+
       io.emit('queue_update');
+
     } catch (err) {
       console.error('Error calling next patient:', err);
       socket.emit('error', 'Failed to call next patient');
@@ -161,4 +165,27 @@ module.exports = (io, socket, activeOPDs) => {
     const patient = await Patient.findOne({ patientId: opd.currentPatientId });
     socket.emit('current_patient', patient);
   });
+
+  // Unassign OPD
+  socket.on('unassign_opd', async (opdId) => {
+    try {
+      const opd = await Opd.findById(opdId);
+      if (!opd) {
+        socket.emit('opd_error', 'OPD not found');
+        return;
+      }
+      opd.isAssigned = false;
+      opd.currentPatientId = null; // Clear current patient
+      await opd.save();
+
+      io.emit('opd_list_updated');
+      io.emit('opd_unassigned', opd);
+
+    } catch (err) {
+      console.error('Error unassigning OPD:', err);
+      socket.emit('opd_error', 'Failed to unassign OPD');
+    }
+  });
 };
+
+

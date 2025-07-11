@@ -24,7 +24,13 @@ const OpdList = () => {
         if (window.confirm('Are you sure you want to delete this OPD?')) {
             socket.emit('delete_opd', opdId);
         }
-    };
+  };
+  
+  const UnAssignOpd = (opdId) => {
+    if (window.confirm('Are you sure you want to unassign this OPD?')) {
+      socket.emit('unassign_opd', opdId);
+    }
+  };
 
   return (
     <>
@@ -43,6 +49,7 @@ const OpdList = () => {
               <td className="px-4 py-4 border-t border-slate-200">{opd.opdNumber}</td>
               <td className="px-4 py-2 border-t border-slate-200">{opd.doctorName}</td>
               <td className="px-4 py-2 border-t border-slate-200">{opd.isAssigned ? 'Yes' : 'No'}</td>
+              <td className="px-4 py-2 border-t border-slate-200 cursor-pointer" onClick={() => UnAssignOpd(opd._id)}>UnAssign</td>
               <td className="px-4 py-2 border-t border-slate-200 cursor-pointer" onClick={() => handleDelete(opd._id)}>Remove</td>
             </tr>
           ))}

@@ -3,6 +3,19 @@ const socket = io(SOCKET_SERVER);
 let selectedOpd = null;
 let selectedDoctor = null;
 
+socket.on('opd_unassigned', (opd) => {
+    // Option 1: Reload the page
+
+    console.log(`${opd.opdNumber} , ${selectedOpd}`);
+    if (opd.opdNumber === selectedOpd) {
+        window.location.reload();
+        
+    }
+    
+
+});
+
+
 // Register as doctor
 socket.emit('register_role', 'doctor');
 
@@ -14,7 +27,7 @@ function fetchAvailableOpds() {
 fetchAvailableOpds();
 
 socket.on('available_opds', (opds) => {
-    
+
     const select = document.getElementById('opd-select');
     select.innerHTML = '';
     opds.forEach(opd => {
@@ -69,6 +82,8 @@ function updateCurrentPatient() {
 }
 
 socket.on('patient_called', (patient) => {
+    console.log('Patient called:', patient);
+
     document.getElementById('current-patient').textContent = patient ? patient.patientId : '-';
     document.getElementById('current-patient-name').textContent = patient ? patient.name : '-';
     document.getElementById('current-patient-nic').textContent = patient ? patient.nic : '-';
@@ -81,6 +96,7 @@ document.getElementById('next-patient-btn').onclick = () => {
         // Wait for queue_update to refresh UI
     }
 };
+
 
 
 
