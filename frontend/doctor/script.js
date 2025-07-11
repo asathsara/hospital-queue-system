@@ -12,9 +12,7 @@ socket.on('opd_unassigned', (opd) => {
         
     }
     
-
 });
-
 
 // Register as doctor
 socket.emit('register_role', 'doctor');
@@ -82,11 +80,13 @@ function updateCurrentPatient() {
 }
 
 socket.on('patient_called', (patient) => {
-    console.log('Patient called:', patient);
 
-    document.getElementById('current-patient').textContent = patient ? patient.patientId : '-';
-    document.getElementById('current-patient-name').textContent = patient ? patient.name : '-';
-    document.getElementById('current-patient-nic').textContent = patient ? patient.nic : '-';
+    console.log('Patient called:', patient);
+    if (patient?.opd === selectedOpd) {
+        document.getElementById('current-patient').textContent = patient ? patient.patientId : '-';
+        document.getElementById('current-patient-name').textContent = patient ? patient.name : '-';
+        document.getElementById('current-patient-nic').textContent = patient ? patient.nic : '-';
+    }
 });
 
 // Handle "Next Patient" button

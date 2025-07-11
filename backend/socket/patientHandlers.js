@@ -36,12 +36,10 @@ module.exports = (io, socket) => {
 
         // Assign next patient and notify the doctor
         const assignedPatient = await assignNextPatientToOpd(targetOpd.opdNumber, io);
-        socket.emit('patient_called',assignedPatient);
+        io.emit('patient_called', assignedPatient);
       }
 
       io.emit('patient_list_updated');
-      socket.emit('patient_added', patient);
-
 
     } catch (err) {
 

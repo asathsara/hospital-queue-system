@@ -71,13 +71,25 @@ module.exports = (io, socket, activeOPDs) => {
     }
   });
 
+  // Reusable function to unassign OPD
+  async function unassignOpdById(opdId) {
+    const opd = await Opd.findById(opdId);
+    if (!opd) return null;
+    opd.isAssigned = false;
+    opd.currentPatientId = null;
+    await opd.save();
+    io.emit('opd_list_updated');
+    io.emit('opd_unassigned', opd);
+    return opd;
+  }
+
   // Delete OPD
   socket.on('delete_opd', async (opdId) => {
-
     try {
+      // Unassign OPD after deletion 
+      await unassignOpdById(opdId);
       await Opd.deleteOne({ _id: opdId });
-      io.emit('opd_list_updated');
-
+    
     } catch (err) {
       console.error('Error deleting OPD:', err);
       socket.emit('opd_error', 'Failed to delete OPD');
@@ -169,18 +181,10 @@ module.exports = (io, socket, activeOPDs) => {
   // Unassign OPD
   socket.on('unassign_opd', async (opdId) => {
     try {
-      const opd = await Opd.findById(opdId);
+      const opd = await unassignOpdById(opdId);
       if (!opd) {
         socket.emit('opd_error', 'OPD not found');
-        return;
       }
-      opd.isAssigned = false;
-      opd.currentPatientId = null; // Clear current patient
-      await opd.save();
-
-      io.emit('opd_list_updated');
-      io.emit('opd_unassigned', opd);
-
     } catch (err) {
       console.error('Error unassigning OPD:', err);
       socket.emit('opd_error', 'Failed to unassign OPD');
