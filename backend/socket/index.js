@@ -1,8 +1,8 @@
 const { Server } = require('socket.io');
 const registerPatientHandlers = require('./patientHandlers');
-const registerOpdHandlers = require('./opdHandlers');
+const { handlerFunction: registerOpdHandlers, unassignOpdById } = require('./opdHandlers');
 const registerDisplayHandlers = require('./displayHandlers');
-const autoAssigner = require('./autoAssigner');
+const Opd = require('../models/Opd');
 
 const activeOPDs = new Map(); // Shared across handlers
 
@@ -30,8 +30,28 @@ function setupSocket(server) {
     registerPatientHandlers(io, socket);
     registerOpdHandlers(io, socket, activeOPDs);
     registerDisplayHandlers(io, socket);
-  });
 
+
+    socket.on('disconnect', async () => {
+      console.log("Socket disconnected:", socket.id);
+
+      const opdNumber = activeOPDs.get(socket.id);
+      if (opdNumber) {
+        try {
+          const opd = await Opd.findOne({ opdNumber });
+          if (opd) {
+            await unassignOpdById(opd._id, io, activeOPDs);
+            console.log(`Auto-unassigned OPD ${opdNumber} on disconnect`);
+          }
+        } catch (err) {
+          console.error('Error auto-unassigning OPD:', err);
+        } finally {
+          activeOPDs.delete(socket.id); // cleanup
+        }
+      }
+    });
+
+  });
   //autoAssigner(io);
 
   return io;

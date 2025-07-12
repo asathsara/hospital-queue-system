@@ -43,7 +43,7 @@ document.getElementById('select-opd-btn').onclick = () => {
     socket.emit('select_opd', Number(opdNumber));
 };
 
-// 2 - When OPD is assigned to this doctor
+// 2 - When OPD is assigned to this doctor (response for select_opd)
 socket.on('opd_assigned', (opdNumber) => {
 
     // set selected OPD
@@ -58,7 +58,7 @@ socket.on('opd_assigned', (opdNumber) => {
     document.getElementById('doctor-title').textContent = `Dr. ${selectedDoctor} - OPD ${opdNumber}`;
 });
 
-// 2 - assign patient to this opd when opd is selecting
+// 2 - assign patient to this opd when opd is selecting (response for select_opd)
 socket.on('patient_called', (patient) => {
 
     console.log('Patient called:', patient);
@@ -86,39 +86,18 @@ socket.on('opd_unassigned', (opd) => {
 
 });
 
-
 // Handle error if OPD is not available
 socket.on('opd_error', (msg) => {
     alert(msg);
     fetchAvailableOpds();
 });
 
-// Update patient queue
-socket.on('queue_update', updateCurrentPatient);
-
-// Update current patient information
-function updateCurrentPatient() {
-    if (selectedOpd) {
-        socket.emit('get_current_patient', selectedOpd);
-    }
-}
-
-
 // Handle "Next Patient" button
 document.getElementById('next-patient-btn').onclick = () => {
     if (selectedOpd) {
+        
+        // 6 - Emit event to get next patient for this OPD
         socket.emit('next_patient', selectedOpd);
         // Wait for queue_update to refresh UI
     }
 };
-
-
-
-
-window.addEventListener('beforeunload', function () {
-    if (selectedOpd) {
-        socket.emit('opd_release', selectedOpd);
-    }
-});
-
-
