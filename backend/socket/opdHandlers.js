@@ -4,14 +4,14 @@ const { assignNextPatientToOpd } = require('./autoAssigner');
 
 module.exports = (io, socket, activeOPDs) => {
 
-  // Doctor gets available OPDs
+  // 1 - Doctor gets available OPDs
   socket.on('get_available_opds', async () => {
 
     const available = await Opd.find({ isAssigned: false });
     socket.emit('available_opds', available);
   });
 
-  // Doctor selects an OPD
+  // 2 - Doctor selects an OPD
   socket.on('select_opd', async (opdNumber) => {
 
     const opd = await Opd.findOne({ opdNumber, isAssigned: false });
@@ -31,9 +31,14 @@ module.exports = (io, socket, activeOPDs) => {
 
     // Assign next patient using the shared function
     const patient = await assignNextPatientToOpd(opdNumber, io);
-    socket.emit('patient_called', patient);
+
+    // Notify if patient is assigned to this OPD
+    if (!patient) {
+      socket.emit('patient_called', patient);
+    }
 
     socket.emit('opd_assigned', opdNumber);
+
     io.emit('opd_list_updated');
 
   });
@@ -49,7 +54,9 @@ module.exports = (io, socket, activeOPDs) => {
         currentPatientId: null
       });
 
-      socket.emit('opd_added', opd);
+      //socket.emit('opd_added', opd);
+
+      // 3 - Notify all doctors, display and opd list that a new OPD is added
       io.emit('opd_list_updated');
 
     } catch (err) {
@@ -63,9 +70,12 @@ module.exports = (io, socket, activeOPDs) => {
 
     try {
       const opds = await Opd.find({});
+
+      // 4 - Emit the list of OPDs to the requesting admin
       socket.emit('opds_list', opds);
 
     } catch (err) {
+
       console.error('Error fetching OPDs:', err);
       socket.emit('opd_error', 'Failed to fetch OPDs');
     }
@@ -73,15 +83,43 @@ module.exports = (io, socket, activeOPDs) => {
 
   // Reusable function to unassign OPD
   async function unassignOpdById(opdId) {
+
     const opd = await Opd.findById(opdId);
-    if (!opd) return null;
+
+    // unassign OPD only found or assigned
+    if (!opd || !opd.isAssigned) return null;
+
+    // unassign OPD and clear current patient
     opd.isAssigned = false;
     opd.currentPatientId = null;
     await opd.save();
+
+    // 3 - Notify all doctors, display and opd list that an OPD is unassigned
     io.emit('opd_list_updated');
-    io.emit('opd_unassigned', opd);
+
+    
+    //  5 - Notify only the doctor using this OPD
+    for (const [socketId, assignedOpdNumber] of activeOPDs.entries()) {
+      if (assignedOpdNumber === opd.opdNumber) {
+        io.to(socketId).emit('opd_unassigned', opd);
+      }
+    }
+
     return opd;
   }
+
+  // Unassign OPD
+  socket.on('unassign_opd', async (opdId) => {
+    try {
+      const opd = await unassignOpdById(opdId);
+      if (!opd) {
+        socket.emit('opd_error', 'OPD not found');
+      }
+    } catch (err) {
+      console.error('Error unassigning OPD:', err);
+      socket.emit('opd_error', 'Failed to unassign OPD');
+    }
+  });
 
   // Delete OPD
   socket.on('delete_opd', async (opdId) => {
@@ -89,7 +127,7 @@ module.exports = (io, socket, activeOPDs) => {
       // Unassign OPD after deletion 
       await unassignOpdById(opdId);
       await Opd.deleteOne({ _id: opdId });
-    
+
     } catch (err) {
       console.error('Error deleting OPD:', err);
       socket.emit('opd_error', 'Failed to delete OPD');
@@ -128,27 +166,37 @@ module.exports = (io, socket, activeOPDs) => {
 
   // Manual OPD release (on browser close/reload)
   socket.on('opd_release', async (opdNumber) => {
+
     // Mark current patient as done if exists
     const opd = await Opd.findOne({ opdNumber });
-    if (opd && opd.currentNumber) {
+
+    if (opd && opd.currentPatientId) {
+
+      // Update the current patient status to 'done'
       await Patient.findOneAndUpdate(
-        { opd: opdNumber, number: opd.currentNumber, status: 'called' },
+        { opd: opdNumber, status: 'called' },
         { status: 'done' }
       );
-      opd.currentNumber = null;
+
+      // Clear current patient in OPD
+      opd.currentPatientId = null;
       await opd.save();
     }
+
     await Opd.findOneAndUpdate({ opdNumber }, { isAssigned: false });
     activeOPDs.delete(socket.id);
     io.emit('opd_list_updated');
     io.emit('queue_update');
+
     console.log(`OPD ${opdNumber} released by manual event`);
   });
 
   // Handle disconnect for doctors
   socket.on('disconnect', async () => {
+
     if (activeOPDs.has(socket.id)) {
       const opdNumber = activeOPDs.get(socket.id);
+
       // Mark current patient as done if exists
       const opd = await Opd.findOne({ opdNumber });
       if (opd && opd.currentNumber) {
@@ -178,18 +226,7 @@ module.exports = (io, socket, activeOPDs) => {
     socket.emit('current_patient', patient);
   });
 
-  // Unassign OPD
-  socket.on('unassign_opd', async (opdId) => {
-    try {
-      const opd = await unassignOpdById(opdId);
-      if (!opd) {
-        socket.emit('opd_error', 'OPD not found');
-      }
-    } catch (err) {
-      console.error('Error unassigning OPD:', err);
-      socket.emit('opd_error', 'Failed to unassign OPD');
-    }
-  });
+
 };
 
 

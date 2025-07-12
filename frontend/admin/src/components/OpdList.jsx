@@ -6,15 +6,18 @@ const OpdList = () => {
   const [opds, setOpds] = useState([]);
 
   useEffect(() => {
-    // Request OPDs
+    //  4 - Request OPDs
     socket.emit('get_opds');
 
-    // Receive OPDs
+    // 4 - Receive OPDs
     socket.on('opds_list', setOpds);
+
+    // 3 - opd list updated maybe added or removed
     socket.on('opd_list_updated', () => socket.emit('get_opds'));
 
     // Optional: Clean up listener
     return () => {
+      
       socket.off('opds_list', setOpds);
       socket.off('opd_list_updated');
     };
