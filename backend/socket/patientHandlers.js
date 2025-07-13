@@ -64,8 +64,14 @@ module.exports = (io, socket, activeOPDs) => {
   socket.on('delete_patient', async (patientId) => {
 
     await Patient.deleteOne({ patientId });
-    
+
     // 7 - patient deleted by admin, update admin and display
+    io.emit('patient_list_updated');
+  });
+
+  // Handle deleting all patients
+  socket.on('delete_all_patients', async () => {
+    await Patient.deleteMany({});
     io.emit('patient_list_updated');
   });
 };

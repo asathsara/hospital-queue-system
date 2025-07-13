@@ -134,7 +134,7 @@ const handlerFunction = (io, socket, activeOPDs) => {
   socket.on('unassign_opd', async (opdId) => {
     try {
 
-      const opd = await unassignOpdById(opdId , io, activeOPDs);
+      const opd = await unassignOpdById(opdId, io, activeOPDs);
       if (!opd) {
         socket.emit('opd_error', 'OPD not found');
       }
@@ -151,7 +151,7 @@ const handlerFunction = (io, socket, activeOPDs) => {
     try {
 
       // Unassign OPD first
-      await unassignOpdById(opdId , io, activeOPDs);
+      await unassignOpdById(opdId, io, activeOPDs);
 
       // Then delete it
       await Opd.deleteOne({ _id: opdId });
@@ -194,6 +194,30 @@ const handlerFunction = (io, socket, activeOPDs) => {
       socket.emit('error', 'Failed to call next patient');
     }
   });
+
+  // Handle deleting all OPDs
+  socket.on('delete_all_opds', async () => {
+    try {
+      // Get all OPDs
+      const allOpds = await Opd.find({});
+
+      // Unassign each one before deletion
+      for (const opd of allOpds) {
+        await unassignOpdById(opd._id, io, activeOPDs);
+      }
+
+      // Then delete all
+      await Opd.deleteMany({});
+
+      // Notify clients
+      io.emit('opd_list_updated');
+
+    } catch (err) {
+      console.error('Error deleting all OPDs:', err);
+      socket.emit('opd_error', 'Failed to delete all OPDs');
+    }
+  });
+
 
 };
 

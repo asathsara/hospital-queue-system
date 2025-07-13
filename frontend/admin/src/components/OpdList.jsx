@@ -35,9 +35,23 @@ const OpdList = () => {
     }
   };
 
+   const handleDeleteAll = () => {
+        if (window.confirm('Are you sure you want to delete all OPDs?')) {
+            socket.emit('delete_all_opds');
+        }
+    };
+
   return (
     <>
-      <h2 className="text-3xl font-bold mb-4 mt-8">OPD List</h2>
+      <div className="flex items-center justify-between mt-8 mb-4">
+                <h2 className="text-3xl font-bold">OPD List</h2>
+                <button
+                    className="bg-red-500 text-white px-2 py-1 rounded text-sm ml- cursor-pointer"
+                    onClick={handleDeleteAll}
+                >
+                    Delete All
+                </button>
+            </div>
       <table className="w-full text-left table-fixed border-separate border-spacing-0 border border-slate-200 rounded-md mt-8">
         <thead>
           <tr className='p-8'>

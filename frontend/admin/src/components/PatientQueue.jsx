@@ -1,4 +1,4 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSocket } from '../contexts/socket';
 const PatientQueue = () => {
 
@@ -20,13 +20,19 @@ const PatientQueue = () => {
             socket.off('patients_list', setPatients);
             socket.off('patient_list_updated');
             socket.off('opd_list_updated');
-            
+
         };
     }, [socket]);
 
     const handleDelete = (patientId) => {
         if (window.confirm('Are you sure you want to delete this patient?')) {
             socket.emit('delete_patient', patientId);
+        }
+    };
+
+    const handleDeleteAll = () => {
+        if (window.confirm('Are you sure you want to delete all patients?')) {
+            socket.emit('delete_all_patients');
         }
     };
 
@@ -46,8 +52,15 @@ const PatientQueue = () => {
 
     return (
         <>
-            <h2 className="text-3xl font-bold mb-4 mt-8">Patient Queue</h2>
-
+            <div className="flex items-center justify-between mt-8 mb-4">
+                <h2 className="text-3xl font-bold">Patient Queue</h2>
+                <button
+                    className="bg-red-500 text-white px-2 py-1 rounded text-sm ml- cursor-pointer"
+                    onClick={handleDeleteAll}
+                >
+                    Delete All
+                </button>
+            </div>
             <table className="w-full text-left table-fixed border-separate border-spacing-0 border border-slate-200 rounded-md mt-8">
                 <thead>
                     <tr className='p-8'>
