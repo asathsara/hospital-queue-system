@@ -8,7 +8,7 @@ function generatePatientId(lastId) {
   return 'P' + num.toString().padStart(2, '0');
 }
 
-module.exports = (io, socket) => {
+module.exports = (io, socket, activeOPDs) => {
   socket.on('add_patient', async ({ name, nic }) => {
     try {
 
@@ -25,8 +25,6 @@ module.exports = (io, socket) => {
         status: 'waiting',
       });
 
-
-
       // --- Auto assign to free OPD if available ---
       const activeOpds = await Opd.find({ isAssigned: true });
       const freeOpds = activeOpds.filter(opd => !opd.currentPatientId);
@@ -36,9 +34,16 @@ module.exports = (io, socket) => {
 
         // Assign next patient and notify the doctor
         const assignedPatient = await assignNextPatientToOpd(targetOpd.opdNumber, io);
-        io.emit('patient_called', assignedPatient);
+
+        //  2 - Notify the opd that a patient has been assigned
+        for (const [socketId, assignedOpdNumber] of activeOPDs.entries()) {
+          if (assignedOpdNumber === assignedPatient.opd) {
+            io.to(socketId).emit('patient_called', assignedPatient);
+          }
+        }
       }
 
+      // 7 - Notify the admin and display that the patient list has been updated
       io.emit('patient_list_updated');
 
     } catch (err) {
@@ -59,6 +64,8 @@ module.exports = (io, socket) => {
   socket.on('delete_patient', async (patientId) => {
 
     await Patient.deleteOne({ patientId });
+    
+    // 7 - patient deleted by admin, update admin and display
     io.emit('patient_list_updated');
   });
 };

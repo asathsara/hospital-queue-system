@@ -62,11 +62,18 @@ socket.on('opd_assigned', (opdNumber) => {
 socket.on('patient_called', (patient) => {
 
     console.log('Patient called:', patient);
-    if (patient?.opd === selectedOpd) {
-        document.getElementById('current-patient').textContent = patient ? patient.patientId : '-';
-        document.getElementById('current-patient-name').textContent = patient ? patient.name : '-';
-        document.getElementById('current-patient-nic').textContent = patient ? patient.nic : '-';
-    }
+
+    const fields = [
+    ['current-patient', patient?.opd === selectedOpd ? patient?.patientId : '-'],
+    ['current-patient-name', patient?.opd === selectedOpd ? patient?.name : '-'],
+    ['current-patient-nic', patient?.opd === selectedOpd ? patient?.nic : '-'],
+];
+
+fields.forEach(([id, value]) => {
+    document.getElementById(id).textContent = value;
+});
+
+
 });
 
 // 3 - new OPD added by admin
@@ -95,9 +102,8 @@ socket.on('opd_error', (msg) => {
 // Handle "Next Patient" button
 document.getElementById('next-patient-btn').onclick = () => {
     if (selectedOpd) {
-        
+
         // 6 - Emit event to get next patient for this OPD
         socket.emit('next_patient', selectedOpd);
-        // Wait for queue_update to refresh UI
     }
 };

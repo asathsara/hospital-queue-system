@@ -75,15 +75,15 @@ const handlerFunction = (io, socket, activeOPDs) => {
     // Assign next patient using the shared function
     const patient = await assignNextPatientToOpd(opdNumber, io);
 
+    // 2 - Notify this doctor that OPD is assigned
+    socket.emit('opd_assigned', opdNumber);
+
     // Notify if patient is assigned to this OPD
     if (patient) {
 
       // 2 - Notify the doctor that a patient is called
       socket.emit('patient_called', patient);
     }
-
-    // 2 - Notify this doctor that OPD is assigned
-    socket.emit('opd_assigned', opdNumber);
 
     // 3 - notify display and admin that a doctor has selected an OPD 
     io.emit('opd_list_updated');
@@ -187,7 +187,7 @@ const handlerFunction = (io, socket, activeOPDs) => {
       socket.emit('patient_called', patient);
 
       // 7 - Notify all displays and admin that the patient queue is updated
-      io.emit('queue_update');
+      io.emit('patient_list_updated');
 
     } catch (err) {
       console.error('Error calling next patient:', err);

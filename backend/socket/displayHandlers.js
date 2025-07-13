@@ -18,6 +18,7 @@ module.exports = (io, socket) => {
   // Function to emit current data to display
   async function sendDisplayData(targetSocket) {
     try {
+      
       const opds = await Opd.find({});
       const data = await Promise.all(opds.map(async (opd) => {
         let patient = null;
@@ -39,9 +40,5 @@ module.exports = (io, socket) => {
     }
   }
 
-  // Optional: Listen to custom queue update event
-  socket.on('refresh_display', () => {
-    sendDisplayData(socket);
-  });
 
 };

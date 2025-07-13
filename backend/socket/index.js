@@ -27,7 +27,7 @@ function setupSocket(server) {
     });
 
     // Share io and activeOPDs between modules
-    registerPatientHandlers(io, socket);
+    registerPatientHandlers(io, socket , activeOPDs);
     registerOpdHandlers(io, socket, activeOPDs);
     registerDisplayHandlers(io, socket);
 

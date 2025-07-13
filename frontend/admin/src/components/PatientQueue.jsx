@@ -12,10 +12,15 @@ const PatientQueue = () => {
         socket.on('patients_list', setPatients);
         socket.on('patient_list_updated', () => socket.emit('get_patients'));
 
+        // patient is assigned to opd 
+        socket.on('opd_list_updated', () => socket.emit('get_patients'));
+
         // Optional: Clean up listener
         return () => {
             socket.off('patients_list', setPatients);
             socket.off('patient_list_updated');
+            socket.off('opd_list_updated');
+            
         };
     }, [socket]);
 
