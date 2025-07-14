@@ -23,15 +23,28 @@
 
     <main class="container mx-auto mt-8 flex  flex-col items-center justify-center px-6 py-10 sm:px-10 lg:px-32">
 
+        <div class="flex items-center gap-3 ">
+            <div
+                class="w-full max-w-3xl bg-white shadow-md rounded-xl p-6 flex items-center justify-between mb-8  border border-gray-200">
+                <div class="flex items-center gap-3">
+                    <span class="relative flex size-3">
+                        <span
+                            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex size-3 rounded-full bg-red-500"></span>
+                    </span>
+                    <div id="timer" class="text-2xl text-gray-500 font-bold"></div>
+                </div>
+            </div>
 
-        <h2 class="text-3xl font-bold mb-4 mt-8">Patient Queue</h2>
+        </div>
+
 
         <table
             class="w-full text-left table-fixed border-separate border-spacing-0 border border-slate-200 rounded-md mt-8">
             <thead>
                 <tr>
-                    <th class="px-4 py-2 border-t-0">OPD Number</th>
-                    <th class="px-4 py-2 border-t-0">Current Patient</th>
+                    <th class="px-4 py-2 border-t-0 text-xl">OPD Number</th>
+                    <th class="px-4 py-2 border-t-0 text-xl">Current Patient</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,11 +52,12 @@
             </tbody>
         </table>
 
-    
-    
-    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
-    <script src="/static/config.js"></script>
-    <script src="script.js"></script>
+
+
+        <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+        <script src="/static/config.js"></script>
+        <script src="script.js"></script>
+        <script src="timer.js"></script>
 
 </body>
 
