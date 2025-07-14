@@ -18,7 +18,7 @@ module.exports = (io, socket) => {
   // Function to emit current data to display
   async function sendDisplayData(targetSocket) {
     try {
-      
+
       const opds = await Opd.find({});
       const data = await Promise.all(opds.map(async (opd) => {
         let patient = null;
@@ -34,6 +34,7 @@ module.exports = (io, socket) => {
       }));
 
       targetSocket.emit('display_data', data);
+      
     } catch (err) {
       console.error('Failed to send display data:', err);
       targetSocket.emit('display_error', 'Failed to load display data');

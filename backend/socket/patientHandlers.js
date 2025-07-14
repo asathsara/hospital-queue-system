@@ -60,18 +60,60 @@ module.exports = (io, socket, activeOPDs) => {
     socket.emit('patients_list', patients);
   });
 
-  // Handle patient deletion
+  const handlePatientOpdCleanup = async (patient) => {
+    if (patient.opd) {
+      const opd = await Opd.findOne({ opdNumber: patient.opd });
+
+      if (opd && opd.currentPatientId === patient.patientId) {
+        opd.currentPatientId = null;
+        await opd.save();
+
+        const newPatient = await assignNextPatientToOpd(opd.opdNumber, io);
+
+
+        // send to the opd even new patient is null, frontend will handle it
+        for (const [socketId, assignedOpdNumber] of activeOPDs.entries()) {
+          if (assignedOpdNumber === opd.opdNumber) {
+            io.to(socketId).emit('patient_called', newPatient);
+          }
+
+        }
+      }
+    }
+  };
+
   socket.on('delete_patient', async (patientId) => {
+    try {
+      const patient = await Patient.findOne({ patientId });
 
-    await Patient.deleteOne({ patientId });
+      if (patient) {
+        await handlePatientOpdCleanup(patient);
+        await Patient.deleteOne({ patientId });
+      }
 
-    // 7 - patient deleted by admin, update admin and display
-    io.emit('patient_list_updated');
+      io.emit('patient_list_updated');
+
+    } catch (err) {
+      console.error('Error deleting patient:', err);
+      socket.emit('error', 'Failed to delete patient');
+    }
   });
 
-  // Handle deleting all patients
   socket.on('delete_all_patients', async () => {
-    await Patient.deleteMany({});
-    io.emit('patient_list_updated');
+    try {
+      const allPatients = await Patient.find({});
+
+      for (const patient of allPatients) {
+        await handlePatientOpdCleanup(patient);
+      }
+
+      await Patient.deleteMany({});
+      io.emit('patient_list_updated');
+
+    } catch (err) {
+      console.error('Error deleting all patients:', err);
+      socket.emit('error', 'Failed to delete all patients');
+    }
   });
+
 };
