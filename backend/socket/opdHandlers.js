@@ -27,10 +27,6 @@ const unassignOpdById = async (opdId, io, activeOPDs) => {
   opd.currentPatientId = null;
   await opd.save();
 
-  // 3 - Notify all doctors, display and opd list that an OPD is unassigned
-  io.emit('opd_list_updated');
-
-
   //  5 - Notify only the doctor using this OPD
   for (const [socketId, assignedOpdNumber] of activeOPDs.entries()) {
     if (assignedOpdNumber === opd.opdNumber) {
@@ -135,6 +131,10 @@ const handlerFunction = (io, socket, activeOPDs) => {
     try {
 
       const opd = await unassignOpdById(opdId, io, activeOPDs);
+
+      // 3 - Notify all doctors, display and opd list that an OPD is unassigned
+      io.emit('opd_list_updated');
+
       if (!opd) {
         socket.emit('opd_error', 'OPD not found');
       }
@@ -155,6 +155,9 @@ const handlerFunction = (io, socket, activeOPDs) => {
 
       // Then delete it
       await Opd.deleteOne({ _id: opdId });
+
+      // Notify clients
+      io.emit('opd_list_updated');
 
     } catch (err) {
       console.error('Error deleting OPD:', err);

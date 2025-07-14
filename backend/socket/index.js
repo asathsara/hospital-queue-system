@@ -8,7 +8,9 @@ const activeOPDs = new Map(); // Shared across handlers
 
 function setupSocket(server) {
   const io = new Server(server, {
-    cors: { origin: '*' },
+    cors: { origin: 'http://localhost:5173' },
+    pingInterval: 5000,   // Send a ping every 5 seconds
+    pingTimeout: 2000     // Disconnect if no pong within 2 seconds
   });
 
   io.on('connection', (socket) => {
@@ -27,7 +29,7 @@ function setupSocket(server) {
     });
 
     // Share io and activeOPDs between modules
-    registerPatientHandlers(io, socket , activeOPDs);
+    registerPatientHandlers(io, socket, activeOPDs);
     registerOpdHandlers(io, socket, activeOPDs);
     registerDisplayHandlers(io, socket);
 
@@ -42,6 +44,9 @@ function setupSocket(server) {
           if (opd) {
             await unassignOpdById(opd._id, io, activeOPDs);
             console.log(`Auto-unassigned OPD ${opdNumber} on disconnect`);
+
+            // 3 - Notify all doctors, display and opd list that an OPD is unassigned
+            io.emit('opd_list_updated');
           }
         } catch (err) {
           console.error('Error auto-unassigning OPD:', err);
