@@ -5,12 +5,14 @@ import OpdList from '../components/OpdList'
 const OpdPage = () => {
     return (
         <>
-            <div className='w-2/5 pr-6'>
-                <AddOpd />
-            </div>
+            <div className='flex flex-wrap md:flex-nowrap'>
+                <div className='w-full md:w-2/5 pr-0 md:pr-6 mb-4 md:mb-0'>
+                    <AddOpd />
+                </div>
 
-            <div className='w-3/5'>
-                <OpdList />
+                <div className='w-full md:w-3/5'>
+                    <OpdList />
+                </div>
             </div>
         </>
     )

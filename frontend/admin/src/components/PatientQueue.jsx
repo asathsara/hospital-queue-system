@@ -80,7 +80,14 @@ const PatientQueue = () => {
                             <td className={`px-4 py-2 border-t border-slate-200 ${getStatusColor(patient.status)}`}>
                                 {patient.status}
                             </td>
-                            <td className="px-4 py-2 border-t border-slate-200 cursor-pointer" onClick={() => handleDelete(patient.patientId)}>Remove</td>
+                            <td className="px-4 py-2 border-t border-slate-200">
+                                <button
+                                    className="bg-red-400 hover:bg-red-500 text-white px-3 py-1 rounded text-sm cursor-pointer w-full"
+                                    onClick={() => handleDelete(patient.patientId)}
+                                >
+                                    Remove
+                                </button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
