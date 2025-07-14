@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSocket } from '../contexts/socket';
+import { toast } from 'sonner';
 
 const OpdList = () => {
   const socket = useSocket();
@@ -23,23 +24,46 @@ const OpdList = () => {
     };
   }, [socket]);
 
+
   const handleDelete = (opdId) => {
-    if (window.confirm('Are you sure you want to delete this OPD?')) {
-      socket.emit('delete_opd', opdId);
-    }
+    toast('Delete this OPD?', {
+      description: 'This action cannot be undone.',
+      action: {
+        label: 'Delete',
+        onClick: () => {
+          socket.emit('delete_opd', opdId);
+          toast.success('OPD deleted');
+        },
+      },
+    });
   };
 
   const UnAssignOpd = (opdId) => {
-    if (window.confirm('Are you sure you want to unassign this OPD?')) {
-      socket.emit('unassign_opd', opdId);
-    }
+    toast('Unassign this OPD?', {
+      description: 'Patients will be removed from this OPD.',
+      action: {
+        label: 'Unassign',
+        onClick: () => {
+          socket.emit('unassign_opd', opdId);
+          toast.success('OPD unassigned');
+        },
+      },
+    });
   };
 
   const handleDeleteAll = () => {
-    if (window.confirm('Are you sure you want to delete all OPDs?')) {
-      socket.emit('delete_all_opds');
-    }
+    toast('Delete all OPDs?', {
+      description: 'This cannot be undone.',
+      action: {
+        label: 'Delete All',
+        onClick: () => {
+          socket.emit('delete_all_opds');
+          toast.success('All OPDs deleted');
+        },
+      },
+    });
   };
+
 
   return (
     <>

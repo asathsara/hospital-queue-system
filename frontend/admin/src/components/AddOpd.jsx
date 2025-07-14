@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSocket } from '../contexts/socket';
+import { toast } from 'sonner';
 
 const AddOpd = () => {
     const socket = useSocket();
@@ -8,13 +9,13 @@ const AddOpd = () => {
 
     const handleSubmit = async () => {
         if (!opdNumber || !doctorName) {
-            alert('Please fill in all fields');
+            toast.error('Please fill in all fields');
             return;
         }
 
         socket.emit('add_opd', { opdNumber, doctorName });
 
-        alert(`OPD "${opdNumber}" for Dr. ${doctorName} added`);
+        toast.success(`OPD "${opdNumber}" for Dr. ${doctorName} added`);
         setOpdNumber('');
         setDoctorName('');
     };

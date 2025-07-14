@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSocket } from '../contexts/socket';
+import { toast } from 'sonner';
+
 const PatientQueue = () => {
 
     const socket = useSocket();
@@ -25,15 +27,29 @@ const PatientQueue = () => {
     }, [socket]);
 
     const handleDelete = (patientId) => {
-        if (window.confirm('Are you sure you want to delete this patient?')) {
-            socket.emit('delete_patient', patientId);
-        }
+        toast('Delete this patient?', {
+            description: 'This action cannot be undone.',
+            action: {
+                label: 'Delete',
+                onClick: () => {
+                    socket.emit('delete_patient', patientId);
+                    toast.success('Patient deleted');
+                },
+            },
+        });
     };
 
     const handleDeleteAll = () => {
-        if (window.confirm('Are you sure you want to delete all patients?')) {
-            socket.emit('delete_all_patients');
-        }
+        toast('Delete all patients?', {
+            description: 'All patient records will be permanently removed.',
+            action: {
+                label: 'Delete All',
+                onClick: () => {
+                    socket.emit('delete_all_patients');
+                    toast.success('All patients deleted');
+                },
+            },
+        });
     };
 
     // Helper function

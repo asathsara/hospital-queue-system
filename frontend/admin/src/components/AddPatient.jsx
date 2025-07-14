@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSocket } from '../contexts/socket';
+import { toast } from 'sonner';
 
 const AddPatient = () => {
   const socket = useSocket();
@@ -10,13 +11,13 @@ const AddPatient = () => {
 
   const handleSubmit = () => {
     if (!name || !nic) {
-      alert('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
 
     socket.emit('add_patient', { name, nic });
 
-    alert(`Patient "${name}" added successfully`);
+    toast.success(`Patient "${name}" added successfully`);
     setName('');
     setNic('');
   };
