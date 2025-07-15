@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "dev": "node --watch server"
+    "dev": "node --watch server",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +15,11 @@
     "express": "^5.1.0",
     "mongoose": "^8.16.2",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "jest": "^30.0.4",
+    "mongodb-memory-server": "^10.1.4",
+    "socket.io-client": "^4.8.1"
   }
+  
 }

@@ -1,14 +1,9 @@
 const Patient = require('../models/Patient');
 const Opd = require('../models/Opd');
 const { assignNextPatientToOpd } = require('./autoAssigner');
+const { generatePatientId } = require('./utils');
 
-function generatePatientId(lastId) {
-  if (!lastId) return 'P01';
-  const num = parseInt(lastId.replace('P', '')) + 1;
-  return 'P' + num.toString().padStart(2, '0');
-}
-
-module.exports = (io, socket, activeOPDs) => {
+const registerPatientHandlers = (io, socket, activeOPDs) => {
   socket.on('add_patient', async ({ name, nic }) => {
     try {
 
@@ -117,3 +112,5 @@ module.exports = (io, socket, activeOPDs) => {
   });
 
 };
+
+module.exports = registerPatientHandlers;
