@@ -15,6 +15,22 @@ A web-based hospital queue management system providing real-time updates for pat
 
 ---
 
+## Screenshots
+
+### Admin Panel (Doctors assigned to OPDs)
+![Admin Panel](screenshots/admin.png)
+Shows doctors who are assigned to OPDs.
+
+### Live System (Admin, Display, Doctor UI)
+![Live System](screenshots/live.png)
+Demonstrates how the admin, display, and doctor OPD UIs work together in real time.
+
+### Connection Lost Example
+![Connection Lost](screenshots/connection.png)
+Shows how the system behaves if the connection is lost.
+
+---
+
 ## Architecture
 
 ```
@@ -159,6 +175,22 @@ npm run dev
 - **Frontend Admin:** [`frontend/admin/src`](frontend/admin/src)
 - **Doctor UI:** [`frontend/doctor/doctor.html`](frontend/doctor/doctor.html), [`frontend/doctor/script.js`](frontend/doctor/script.js)
 - **Display UI:** [`frontend/display/display.html`](frontend/display/display.html), [`frontend/display/script.js`](frontend/display/script.js)
+
+---
+
+## Screenshots
+
+### Admin Panel (Doctors assigned to OPDs)
+![Admin Panel](screenshots/admin.png)
+Shows doctors who are assigned to OPDs.
+
+### Live System (Admin, Display, Doctor UI)
+![Live System](screenshots/live.png)
+Demonstrates how the admin, display, and doctor OPD UIs work together in real time.
+
+### Connection Lost Example
+![Connection Lost](screenshots/connection.png)
+Shows how the system behaves if the connection is lost.
 
 ---
 
