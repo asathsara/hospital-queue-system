@@ -1,16 +1,19 @@
 # Hospital Queue System
 
-A web-based hospital queue management system providing real-time updates for patients, doctors, and admins.
+A web-based hospital queue management system providing real-time updates for patients, doctors, and admins.  
+Designed for use within a hospital's local area network (LAN), this system ensures fast, reliable communication between all roles without relying on external internet connectivity.  
+It features a modular architecture with separate admin, doctor, and display interfaces, all synchronized via Socket.IO for instant updates.  
+The backend uses Node.js, Express, and MongoDB for robust data management, while the frontend leverages React and Tailwind CSS for a modern, responsive UI.  
+Overall, the project demonstrates good separation of concerns, real-time event handling, and test coverage, making it suitable for small to medium hospital environments. 
 
 ---
 
 ## Features
-
 - **Patient Registration & Queue Management:** Patients can be registered and managed in a queue system.
+- **Previous Day Patients Auto-Cleared:** Patients from previous days are automatically removed when the system starts.
 - **Real-Time Updates:** Doctors and display screens receive live updates via Socket.IO.
 - **Admin Dashboard:** Admins can add, remove, and manage OPDs and patients.
 - **Responsive Design:** Works on desktop and mobile devices.
-- **Day/Night Theme Toggle:** (Planned/Optional)
 - **Tailwind CSS Styling:** Modern, clean UI.
 
 ---
