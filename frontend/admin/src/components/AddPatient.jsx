@@ -7,7 +7,7 @@ const AddPatient = () => {
   const [name, setName] = useState('');
   const [nic, setNic] = useState('');
 
-  socket.emit('register_role', 'doctor');
+  socket.emit('register_role', 'admin');
 
   const handleSubmit = () => {
     if (!name || !nic) {
@@ -50,7 +50,7 @@ const AddPatient = () => {
 
       <button
         onClick={handleSubmit}
-        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 w-full mt-6"
+        className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 w-full mt-6 cursor-pointer"
       >
         Add Patient
       </button>

@@ -45,7 +45,7 @@ const AddOpd = () => {
             </div>
             <button
                 onClick={handleSubmit}
-                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 w-full mt-6"
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-400 w-full mt-6 cursor-pointer"
             >
                 Add OPD
             </button>

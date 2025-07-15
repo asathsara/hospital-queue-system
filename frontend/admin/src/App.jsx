@@ -19,7 +19,7 @@ function App() {
           </Routes>
         </div>
       </div>
-      <Toaster />
+      <Toaster position='top-center' />
     </Router>
   )
 }
